@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>DETAIL</h1>
+<hr>
+<p>{{movie.title}}</p>
+<p>{{movie.description}}</p>
+
+{% if request.user.is_authenticated %}
+{% if request.user == movie.user %}
+<a href="{% url 'movies:update' movie.pk %}">UPDATE</a>
+<form action="{% url 'movies:delete' movie.pk %}" method="POST">
+    {% csrf_token %}
+    <input type="submit" value="DELETE">
+</form>
+{% endif %}
+{% endif %}
+
+<a href="{% url 'movies:index' %}">BACK</a>
+<hr>
+
+<h4>댓글 목록</h4>
+    {% if comments %}
+    <p>총 {{comments|length}}개의 댓글이 있습니다.</p>
+        <ul>
+        {% for comment in comments %}
+        <li>
+            <span>{{comment.content}} - {{comment.user}}</span>
+            {% if request.user == comment.user %}
+            <form action="{% url 'movies:comments_delete' movie.pk comment.pk %}" method='POST'>
+                {% csrf_token %}
+                <input type="submit" value="DELETE">
+            </form>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>댓글이 없습니다.</p>
+    {% endif %}
+
+<hr>
+{% if request.user.is_authenticated %}
+<form action="{% url 'movies:comments_create' movie.pk %}" method='POST'>
+    {% csrf_token %}
+    {{comment_form}}
+    <input type="submit" value="제출">
+</form>
+{% else %}
+    <a href="{% url 'accounts:login' %}">[댓글을 작성하려면 로그인하세요.]</a>
+{% endif %}
+
+{% endblock content %}
